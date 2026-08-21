@@ -76,7 +76,7 @@ userSchema.methods.generateAccessToken = function () {
 };
 
 userSchema.methods.generateRefreshToken = function () {
-  // short lived jwt token
+  // long lived jwt token
   return jwt.sign(
     {
       _id: this._id,
