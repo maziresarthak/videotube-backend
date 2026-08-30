@@ -81,7 +81,7 @@ const registerUser = asyncHandler(async (req, res) => {
       .status(201)
       .json(new ApiResponse(200, createdUser, "User registered successfully"));
   } catch (error) {
-    console.log("User creation failed");
+    console.log("User creation failed", error);
 
     if (avatar) {
       await deleteFromCloudinary(avatar.public_id);
