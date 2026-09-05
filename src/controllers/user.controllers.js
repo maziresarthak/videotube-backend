@@ -278,7 +278,38 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, req.user, "Current user dettails"));
 });
 
-const updateAccountDetails = asyncHandler(async (req, res) => {});
+const updateAccountDetails = asyncHandler(async (req, res) => {
+  const { fullname, email } = req.body;
+
+  if (!fullname && !email) {
+    throw new ApiError(
+      400,
+      "At least one field (fullname or email) is required to update account details"
+    );
+  }
+
+  const updatedFields = {};
+
+  if (fullname) {
+    updatedFields.fullname = fullname;
+  }
+
+  if (email) {
+    updatedFields.email = email;
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: updatedFields,
+    },
+    { new: true }
+  ).select("-password -refreshToken");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Account details updated successfully"));
+});
 
 const updateUserAvatar = asyncHandler(async (req, res) => {});
 
