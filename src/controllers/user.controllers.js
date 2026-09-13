@@ -370,6 +370,10 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Cover image updated successfully"));
 });
 
+const getChannelProfile = asyncHandler(async (req, res) => {});
+
+const getWatchHistory = asyncHandler(async (req, res) => {});
+
 export {
   registerUser,
   loginUser,
