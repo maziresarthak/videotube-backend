@@ -7,6 +7,7 @@ import {
 } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -425,7 +426,7 @@ const getChannelProfile = asyncHandler(async (req, res) => {
         username: 1,
         avatar: 1,
         subscribersCount: 1,
-        channelSubscribedToCount: 1,
+        channelSubscriptionsCount: 1,
         isSubscribed: 1,
         coverImage: 1,
         email: 1,
