@@ -1,6 +1,6 @@
 import mongoose, { isValidObjectId } from "mongoose";
-import { Tweet } from "../models/tweet.model.js";
-import { User } from "../models/user.model.js";
+import { Tweet } from "../models/tweet.models.js";
+import { User } from "../models/user.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -12,7 +12,7 @@ const createTweet = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Content is required");
   }
 
-  const { owner } = req.user;
+  const owner = req.user; // Assuming the user is attached to the request object by the verifyJWT middleware
 
   const tweet = await Tweet.create({
     content,
