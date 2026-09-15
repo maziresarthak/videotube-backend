@@ -24,4 +24,24 @@ const createTweet = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, tweet, "Tweet created successfully"));
 });
 
-export { createTweet };
+const getUserTweets = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  if (!isValidObjectId(userId)) {
+    throw new ApiError(400, "Invalid user ID");
+  }
+
+  const userTweets = await Tweet.find({ owner: userId });
+
+  if (userTweets.length === 0) {
+    throw new ApiError(404, "User tweets not found");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, userTweets, "User tweets retrieved successfully")
+    );
+});
+
+export { createTweet, getUserTweets };
