@@ -5,6 +5,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const verifyJWT = asyncHandler(async (req, _, next) => {
   const token =
+    // ? check for cookies and body so the app doesn't break if the token is sent in either of these ways
     req.cookies?.accessToken ||
     req.body?.accessToken ||
     req.header("Authorization")?.replace("Bearer ", "");
