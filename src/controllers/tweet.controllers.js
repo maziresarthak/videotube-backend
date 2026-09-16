@@ -44,4 +44,44 @@ const getUserTweets = asyncHandler(async (req, res) => {
     );
 });
 
-export { createTweet, getUserTweets };
+const updateTweet = asyncHandler(async (req, res) => {
+  const { tweetId } = req.params;
+
+  if (!isValidObjectId(tweetId)) {
+    throw new ApiError(400, "Invalid tweet ID");
+  }
+
+  const { content } = req.body;
+
+  if (!content || content.trim() === "") {
+    throw new ApiError(400, "Content is required");
+  }
+
+  const tweet = await Tweet.findOneAndUpdate(
+    {
+      _id: tweetId,
+      owner: req.user?._id,
+    },
+    {
+      $set: {
+        content: content.trim(),
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  if (!tweet) {
+    throw new ApiError(404, "Tweet not found or you are not the owner");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, tweet, "Tweet updated successfully"));
+});
+
+const deleteTweet = asyncHandler(async (req, res) => {});
+
+export { createTweet, getUserTweets, updateTweet, deleteTweet };
