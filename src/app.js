@@ -21,10 +21,12 @@ app.use(cookieParser());
 import healthcheckRouter from "./routes/healthcheck.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import tweetRoutes from "./routes/tweet.routes.js";
+import videoRoutes from "./routes/video.routes.js";
 
 // routes
 app.use("/api/v1/healthcheck", healthcheckRouter);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/tweets", tweetRoutes);
+app.use("/api/v1/videos", videoRoutes);
 
 export { app };
