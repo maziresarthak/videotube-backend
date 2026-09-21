@@ -73,4 +73,104 @@ const publishAVideo = asyncHandler(async (req, res) => {
   }
 });
 
-export { publishAVideo };
+const getAllVideos = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+
+  const pipeline = [
+    {
+      $match: {
+        isPublished: true,
+      },
+    },
+  ];
+
+  if (userId) {
+    if (!mongoose.isValidObjectId(userId)) {
+      throw new ApiError(400, "Invalid userId");
+    }
+
+    pipeline.push({
+      $match: {
+        owner: new mongoose.Types.ObjectId(userId),
+      },
+    });
+  }
+
+  if (query) {
+    pipeline.push({
+      $match: {
+        title: {
+          $regex: query,
+          $options: "i",
+        },
+      },
+    });
+  }
+
+  const allowedSortFields = ["views", "createdAt"];
+  const sortField = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
+
+  const sortDirection = sortType === "asc" ? 1 : -1;
+
+  pipeline.push(
+    {
+      $sort: {
+        [sortField]: sortDirection,
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+        pipeline: [
+          {
+            $project: {
+              _id: 1,
+              fullname: 1,
+              username: 1,
+              avatar: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $addFields: {
+        owner: {
+          $arrayElemAt: ["$owner", 0],
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        videoFile: 1,
+        thumbnail: 1,
+        title: 1,
+        description: 1,
+        duration: 1,
+        views: 1,
+        isPublished: 1,
+        owner: 1,
+        createdAt: 1,
+      },
+    }
+  );
+
+  const aggregate = Video.aggregate(pipeline);
+
+  const options = {
+    page: Number(page),
+    limit: Number(limit),
+  };
+
+  const result = await Video.aggregatePaginate(aggregate, options);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, result, "Videos fetched successfully"));
+});
+
+export { publishAVideo, getAllVideos };
