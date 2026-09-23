@@ -33,6 +33,7 @@ router
 router
   .route("/:videoId")
   .get(getVideoById)
-  .patch(upload.single("thumbnail"), updateVideo);
+  .patch(upload.single("thumbnail"), updateVideo)
+  .delete(deleteVideo);
 
 export default router;
