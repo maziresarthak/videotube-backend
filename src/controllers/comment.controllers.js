@@ -108,4 +108,46 @@ const getVideoComments = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, result, "Comments fetched successfully"));
 });
 
-export { addComment, getVideoComments };
+const updateComment = asyncHandler(async (req, res) => {
+  const { commentId } = req.params;
+  const { content } = req.body;
+
+  if (!isValidObjectId(commentId)) {
+    throw new ApiError(400, "Invalid comment id");
+  }
+
+  if (!content?.trim()) {
+    throw new ApiError(400, "Please add a comment");
+  }
+
+  const comment = await Comment.findOneAndUpdate(
+    {
+      _id: commentId,
+      owner: req.user._id,
+    },
+    {
+      $set: {
+        content: content.trim(),
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  if (!comment) {
+    throw new ApiError(
+      404,
+      "Comment not found or you are not the owner of this comment"
+    );
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, comment, "Comment updated successfully"));
+});
+
+const deleteComment = asyncHandler(async (req, res) => {});
+
+export { addComment, getVideoComments, updateComment, deleteComment };
