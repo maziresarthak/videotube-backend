@@ -37,4 +37,75 @@ const addComment = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, comment, "Comment added successfully"));
 });
 
-export { addComment };
+const getVideoComments = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+  const { page = 1, limit = 10 } = req.query;
+
+  if (!isValidObjectId(videoId)) {
+    throw new ApiError(400, "Invalid video id");
+  }
+
+  const video = await Video.findOne({
+    _id: videoId,
+    isPublished: true,
+  });
+
+  if (!video) {
+    throw new ApiError(404, "Video not found");
+  }
+
+  const commentAggregation = Comment.aggregate([
+    {
+      $match: {
+        video: new mongoose.Types.ObjectId(videoId),
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+        pipeline: [
+          {
+            $project: {
+              _id: 1,
+              fullname: 1,
+              username: 1,
+              avatar: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $addFields: {
+        owner: {
+          $arrayElemAt: ["$owner", 0],
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        content: 1,
+        video: 1,
+        owner: 1,
+        createdAt: 1,
+      },
+    },
+  ]);
+
+  const options = {
+    page: Number(page),
+    limit: Number(limit),
+  };
+
+  const result = await Comment.aggregatePaginate(commentAggregation, options);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, result, "Comments fetched successfully"));
+});
+
+export { addComment, getVideoComments };
