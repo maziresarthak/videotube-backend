@@ -123,7 +123,7 @@ const updateComment = asyncHandler(async (req, res) => {
   const comment = await Comment.findOneAndUpdate(
     {
       _id: commentId,
-      owner: req.user._id,
+      owner: req.user?._id,
     },
     {
       $set: {
@@ -148,6 +148,28 @@ const updateComment = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, comment, "Comment updated successfully"));
 });
 
-const deleteComment = asyncHandler(async (req, res) => {});
+const deleteComment = asyncHandler(async (req, res) => {
+  const { commentId } = req.params;
+
+  if (!isValidObjectId(commentId)) {
+    throw new ApiError(400, "Invalid comment id");
+  }
+
+  const comment = await Comment.findOneAndDelete({
+    _id: commentId,
+    owner: req.user?._id,
+  });
+
+  if (!comment) {
+    throw new ApiError(
+      404,
+      "Comment not found or you are not the owner of this comment"
+    );
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Comment deleted successfully"));
+});
 
 export { addComment, getVideoComments, updateComment, deleteComment };
