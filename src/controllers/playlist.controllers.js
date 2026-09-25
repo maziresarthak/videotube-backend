@@ -175,6 +175,30 @@ const updatePlaylistById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, playlist, "Playlist updated successfully"));
 });
 
+const deletePlaylistById = asyncHandler(async (req, res) => {
+  const { playlistId } = req.params;
+
+  if (!isValidObjectId(playlistId)) {
+    throw new ApiError(400, "Invalid playlistId");
+  }
+
+  const playlist = await Playlist.findOneAndDelete({
+    _id: playlistId,
+    owner: req.user._id,
+  });
+
+  if (!playlist) {
+    throw new ApiError(
+      404,
+      "Playlist not found or you are not the owner of this playlist"
+    );
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Playlist deleted successfully"));
+});
+
 export {
   createPlaylist,
   addVideoToPlaylist,
@@ -182,4 +206,5 @@ export {
   getUserPlaylists,
   getPlaylistById,
   updatePlaylistById,
+  deletePlaylistById,
 };
