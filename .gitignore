@@ -122,3 +122,6 @@ dist
 
 # ignore public/uploads folder
 public/temp
+
+# ignore the forsubsciprioncontroller txt file
+forsubscriptioncontrollertesting.txt
