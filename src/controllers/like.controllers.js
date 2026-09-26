@@ -124,7 +124,10 @@ const getLikedVideos = asyncHandler(async (req, res) => {
   const likedVideos = await Like.find({
     likedBy,
     video: { $exists: true },
-  }).populate("video", "_id title description duration views owner createdAt");
+  }).populate(
+    "video",
+    "_id thumbnail title description duration views owner createdAt"
+  );
 
   if (likedVideos.length === 0) {
     return res.status(200).json(new ApiResponse(200, [], "No videos liked"));
