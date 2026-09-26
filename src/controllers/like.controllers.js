@@ -1,6 +1,7 @@
 import mongoose, { isValidObjectId } from "mongoose";
 import { Like } from "../models/like.models.js";
 import { Video } from "../models/video.models.js";
+import { Comment } from "../models/comment.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -44,4 +45,40 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, newLike, "Liked successfully"));
 });
 
-export { toggleVideoLike };
+const toggleCommentLike = asyncHandler(async (req, res) => {
+  const { commentId } = req.params;
+  const likedBy = req.user._id;
+
+  if (!isValidObjectId(commentId)) {
+    throw new ApiError(400, "Invalid comment id");
+  }
+
+  const comment = await Comment.findById(commentId);
+
+  if (!comment) {
+    throw new ApiError(404, "Comment not found");
+  }
+
+  const like = await Like.findOne({
+    comment: commentId,
+    likedBy,
+  });
+
+  if (like) {
+    await like.deleteOne();
+    return res
+      .status(200)
+      .json(new ApiResponse(200, [], "Unliked successfully"));
+  }
+
+  const newLike = await Like.create({
+    comment: commentId,
+    likedBy,
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, newLike, "Liked successfully"));
+});
+
+export { toggleVideoLike, toggleCommentLike };
