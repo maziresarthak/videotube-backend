@@ -1,0 +1,47 @@
+import mongoose, { isValidObjectId } from "mongoose";
+import { Like } from "../models/like.models.js";
+import { Video } from "../models/video.models.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+
+const toggleVideoLike = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+  const likedBy = req.user._id;
+
+  if (!isValidObjectId(videoId)) {
+    throw new ApiError(400, "Invalid video id");
+  }
+
+  const video = await Video.findOne({
+    _id: videoId,
+    isPublished: true,
+  });
+
+  if (!video) {
+    throw new ApiError(404, "Video not found");
+  }
+
+  const like = await Like.findOne({
+    video: videoId,
+    likedBy,
+  });
+
+  if (like) {
+    await like.deleteOne();
+    return res
+      .status(200)
+      .json(new ApiResponse(200, [], "Unliked successfully"));
+  }
+
+  const newLike = await Like.create({
+    video: videoId,
+    likedBy,
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, newLike, "Liked successfully"));
+});
+
+export { toggleVideoLike };
