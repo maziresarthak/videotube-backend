@@ -55,4 +55,20 @@ const getChannelStats = asyncHandler(async (req, res) => {
   );
 });
 
-export { getChannelStats };
+const getChannelVideos = asyncHandler(async (req, res) => {
+  const videos = await Video.find({
+    owner: req.user._id,
+  })
+    .sort({
+      createdAt: -1,
+    })
+    .select("-videoFile -isPublished -updatedAt -__v");
+
+  if (videos.length === 0) {
+    return res.status(200).json(new ApiResponse(200, [], "No videos found"));
+  }
+
+  return res.status(200).json(new ApiResponse(200, videos, "Channel videos"));
+});
+
+export { getChannelStats, getChannelVideos };
