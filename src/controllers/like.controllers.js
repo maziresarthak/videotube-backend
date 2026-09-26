@@ -118,4 +118,23 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, newLike, "Liked successfully"));
 });
 
-export { toggleVideoLike, toggleCommentLike, toggleTweetLike };
+const getLikedVideos = asyncHandler(async (req, res) => {
+  const likedBy = req.user._id;
+
+  const likedVideos = await Like.find({
+    likedBy,
+    video: { $exists: true },
+  }).populate("video", "_id title description duration views owner createdAt");
+
+  if (likedVideos.length === 0) {
+    return res.status(200).json(new ApiResponse(200, [], "No videos liked"));
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, likedVideos, "Liked videos retrieved successfully")
+    );
+});
+
+export { toggleVideoLike, toggleCommentLike, toggleTweetLike, getLikedVideos };
